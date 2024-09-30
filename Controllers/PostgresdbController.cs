@@ -106,22 +106,20 @@ namespace UsersService.Controllers
         }
             // Método para verificar si el correo ya existe
         [HttpGet("exists")]
-        public async Task<IActionResult> VerifyEmailExists([FromQuery] string email)
+        public async Task<IActionResult> VerifyEmailExists([FromQuery] Guid id)
         {
-            if (string.IsNullOrWhiteSpace(email))
-                return BadRequest("El correo electrónico no puede estar vacío.");
 
-            var AdminExists = await _context.Admins.AnyAsync(u => u.Email == email);
+            var AdminExists = await _context.Admins.AnyAsync(u => u.Id == id);
 
-            var StudentExists = await _context.Students.AnyAsync(u => u.Email == email);
+            var StudentExists = await _context.Students.AnyAsync(u => u.Id == id);
 
-            var TeacherExists = await _context.Admins.AnyAsync(u => u.Email == email);
+            var TeacherExists = await _context.Admins.AnyAsync(u => u.Id == id);
 
 
             if (AdminExists || TeacherExists || StudentExists)
-                return Ok(new { message = "El correo ya está registrado.", status = true });
+                return Ok(new { message = "El usuario ya existe.", status = true });
             else
-                return NotFound(new { message = "El correo no está registrado.", status = false });
+                return NotFound(new { message = "El usuario no existe.", status = false });
         }
 
         // Método para validar email y contraseña
