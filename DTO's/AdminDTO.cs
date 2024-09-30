@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-public class StudentDTO
+public class AdminDTO
 {
     [Required]
     public Guid? Id { get; set; } 
@@ -9,5 +9,10 @@ public class StudentDTO
     public string LastName { get; set; } = null!;
     [Required]
     public string Email { get; set; } = null!; 
+    [Required]
+    public string Password { get; set; } = string.Empty;
+    [Required]
+    public string Rol { get; set; } = "Admin";
+
 
 }

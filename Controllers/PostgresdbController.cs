@@ -56,7 +56,7 @@ namespace UsersService.Controllers
         }
 
         // 4. Editar estudiante
-        [HttpPut("estudiante/{id}")]
+        [HttpPut("Student/{id}")]
         public async Task<IActionResult> UpdateEstudiante(Guid id, Student updatedStudent)
         {
             var estudiante = await _context.Students.FindAsync(id);
@@ -86,7 +86,7 @@ namespace UsersService.Controllers
         }
 
         // Obtener docente por Id
-        [HttpGet("docente/{id}")]
+        [HttpGet("GetTeacher/{id}")]
         public async Task<ActionResult<Teacher>> GetTeacherById(Guid id)
         {
             var teacher = await _context.Teachers.FindAsync(id);
@@ -96,7 +96,7 @@ namespace UsersService.Controllers
         }
 
         // Obtener estudiante por Id
-        [HttpGet("estudiante/{id}")]
+        [HttpGet("GetStudent/{id}")]
         public async Task<ActionResult<Student>> GetStudentById(Guid id)
         {
             var estudiante = await _context.Students.FindAsync(id);
@@ -104,5 +104,76 @@ namespace UsersService.Controllers
 
             return estudiante;
         }
+            // Método para verificar si el correo ya existe
+        [HttpGet("exists")]
+        public async Task<IActionResult> VerifyEmailExists([FromQuery] string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest("El correo electrónico no puede estar vacío.");
+
+            var AdminExists = await _context.Admins.AnyAsync(u => u.Email == email);
+
+            var StudentExists = await _context.Students.AnyAsync(u => u.Email == email);
+
+            var TeacherExists = await _context.Admins.AnyAsync(u => u.Email == email);
+
+
+            if (AdminExists || TeacherExists || StudentExists)
+                return Ok(new { message = "El correo ya está registrado.", status = true });
+            else
+                return NotFound(new { message = "El correo no está registrado.", status = false });
+        }
+
+        // Método para validar email y contraseña
+        [HttpPost("validate-credentials")]
+        public async Task<ActionResult<bool>> ValidateCredentials([FromBody] CredentialRequest credentials)
+        {
+            var admin = await _context.Admins.FirstOrDefaultAsync(u => u.Email == credentials.Email);
+
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(u => u.Email == credentials.Email);
+
+            if (admin == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            else if (teacher == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            if (admin.Password == credentials.Password)
+            {
+                return Ok(new
+                    {
+                        message = "Credenciales válidas.",
+                        status = true,
+                        userId = admin.Id,
+                        userRol = admin.Rol
+                    });
+            }
+            else if (teacher.Password == credentials.Password)
+                     {
+                return Ok(new
+                    {
+                        message = "Credenciales válidas.",
+                        status = true,
+                        userId = teacher.Id,
+                        userRol = teacher.Rol
+                    });
+            }
+            else
+            {
+                return BadRequest("Contraseña incorrecta");
+            }
+        }
+    
     }
+
+        public class CredentialRequest
+    {
+        public string Email { get; set; } = null!; 
+        public string Password { get; set; } = null!; 
+    }
+
 }
